@@ -1,0 +1,76 @@
+
+.upper-bar {
+	display: inline-block;
+}
+
+.level {
+	display: inline-block;
+	margin-left: 20px;
+	margin-bottom: 20px;
+}
+
+.player {
+	display: inline-block;
+	margin-left: 200px;
+	margin-bottom: 20px;
+}
+
+.switch {
+	display: inline-block;
+	margin-left: 20px;
+	margin-bottom: 20px;
+}
+
+.play {
+	position: absolute;
+	left: 300px;
+	bottom: 20px;
+	font-weight: bold;
+	font-size: 20px;
+}
+
+.renew {
+	position: absolute;
+	left: 400px;
+	bottom: 20px;
+	font-weight: bold;
+	font-size: 20px;
+}
+
+.lol-box {
+	width: 1200px;
+	display: inline-block;
+}
+
+.lol-item {
+	width: 35px;
+	height: 400px;
+	margin-top: 10px;
+	margin-left: 20px;
+	background-color: brown;
+	display: inline-block;	
+	border-width: 1px;
+	border-style: inset;
+	border-color: darkgray;
+	box-shadow: 3px -4px 4px 2px black;	
+}
+
+.lol-item-selected {
+	background-color: blue;
+}
+
+.end-message {
+	position: absolute;
+	left: 340px;
+	bottom: 230px;
+	font-weight: bold;
+	font-size: 80px;
+}
+
+.end-message-win {
+	color: green;
+}
+
+.end-message-lost {
+	color: red;
+}
