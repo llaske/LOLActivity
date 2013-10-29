@@ -1,7 +1,7 @@
 
 function LOLGame(size) {
 	// Set initial
-	var length = Math.max(size,1);
+	var length = Math.max(size,0);
 	var player = 0;
 	
 	// Accessor

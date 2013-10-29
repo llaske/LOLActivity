@@ -24,7 +24,9 @@ define(function (require) {
 		};
 		
         // Initialize the game
-        app = new LOLGameApp({activity: activity}).renderInto(document.getElementById("canvas"));
+		app = new LOLGameApp({activity: activity});
+		app.load();
+        app.renderInto(document.getElementById("canvas"));
 
     });
 

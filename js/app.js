@@ -3,7 +3,7 @@
 enyo.kind({
 	name: "LOLGameApp",
 	kind: enyo.Control,
-	published: {size: 13, activity: null},	
+	published: {size: 13, level: 1, count: 13, activity: null},	
 	components: [
 		{classes: "playboard", components:[
 			{name: "player", classes: "player-image"},
@@ -25,15 +25,21 @@ enyo.kind({
 	// Init game
 	init: function() {
 		// Init game context
-		this.game = new LOLGame(this.size);
+		this.game = new LOLGame(this.count);
+		if (this.count > 0) this.player = this.game.getPlayer();
+		this.count = this.size;
 		this.selectedCount = 0;
-		this.player = this.game.getPlayer();
 		
 		// Init color
-		this.activity.getXOColor(function(error, colors) {
-			console.log(colors.fill);
-			console.log(colors.stroke);			
-		});
+		this.activity.getXOColor(function(error, colors) {});
+		
+		// Init level
+		document.getElementById("level-easy-button").classList.remove('active');
+		document.getElementById("level-medium-button").classList.remove('active');
+		document.getElementById("level-hard-button").classList.remove('active');		
+		if (this.level == 1) document.getElementById("level-easy-button").classList.add('active');
+		else if (this.level == 2) document.getElementById("level-medium-button").classList.add('active');
+		else if (this.level == 3) document.getElementById("level-hard-button").classList.add('active');
 			
 		// Draw board
 		this.drawBoard();
@@ -129,7 +135,7 @@ enyo.kind({
 			return;
 		if (this.selectedCount == 0)
 			return;	
-		this.game.play(this.selectedCount);
+		this.save(this.game.play(this.selectedCount));
 		this.drawBoard();
 		this.$.playbutton.hide();
 	},
@@ -162,14 +168,37 @@ enyo.kind({
 		// Then play
 		else if (this.step == 2) {
 			window.clearInterval(this.timer);
-			this.game.play(this.selectedCount);			
+			this.save(this.game.play(this.selectedCount));
 			this.drawBoard();
 		}
 	},
 	
 	// Start a new game
 	doRenew: function() {
+		this.level = this.getLevel();	
 		this.init();
+	},
+	
+	// Load game from datastore
+	load: function() {
+		var datastoreObject = this.activity.getDatastoreObject();
+		var currentthis = this;
+		datastoreObject.loadAsText(function (error, metadata, data) {
+			var data = JSON.parse(data);
+			currentthis.size = data.size;
+			currentthis.count = data.count;
+			currentthis.level = data.level;
+			currentthis.player = data.player;
+			currentthis.init();
+		});	
+	},
+	
+	// Save game in datastore
+	save: function(count) {
+		var datastoreObject = this.activity.getDatastoreObject();
+		var jsonData = JSON.stringify({size: this.size, count: count, level: this.getLevel(), player: this.game.getPlayer()});
+		datastoreObject.setDataAsText(jsonData);
+		datastoreObject.save(function() {});
 	}
 });
 
