@@ -3,25 +3,17 @@
 enyo.kind({
 	name: "LOLGameApp",
 	kind: enyo.Control,
-	published: {size: 13},	
+	published: {size: 13, activity: null},	
 	components: [
-		{classes: "upper-bar", components: [
-			{kind: "onyx.RadioGroup", classes: "level", components: [
-				{name: "easy", content: "Easy", active: true},
-				{name: "medium", content: "Medium"},
-				{name: "hard", content: "Hard"}
+		{classes: "playboard", components:[
+			{name: "player", classes: "player-image"},
+			{name: "box", classes: "lol-box", components: [
 			]},
-			{kind: "onyx.RadioGroup", classes: "player", components: [
-				{name: "player", disabled: true, content: "Player", active: true},
-				{name: "computer", disabled: true, content: "Computer"}
-			]},
-			{kind: "onyx.Button", name: "switchplayer", classes: "switch", content: "Switch player", ontap: "switchPlayer"}
+			{name: "computer", classes: "computer-image"}
 		]},
-		{name: "box", classes: "lol-box", components: [
-		]},
-		{kind: "onyx.Button", classes: "play", content: "Play", ontap: "doPlay"},
-		{kind: "onyx.Button", name: "renew", classes: "renew", showing: false, content: "Restart", ontap: "doRenew"},
-		{name: "endmessage", showing: false, classes: "end-message"}
+		{name: "playbutton", kind: "Image", src: "icons/play.png", classes: "play", ontap: "doPlay", showing: false},
+		{name: "endaudio", kind: "HTML5.Audio", preload: "auto", autobuffer: true, controlsbar: false},
+		{name: "endmessage", content: "", showing: false, classes: "end-message"}
 	],
 	
 	// Constructor
@@ -37,6 +29,12 @@ enyo.kind({
 		this.selectedCount = 0;
 		this.player = this.game.getPlayer();
 		
+		// Init color
+		this.activity.getXOColor(function(error, colors) {
+			console.log(colors.fill);
+			console.log(colors.stroke);			
+		});
+			
 		// Draw board
 		this.drawBoard();
 	},
@@ -60,33 +58,45 @@ enyo.kind({
 				{ owner: this }
 			).render();
 		}
-		this.$.switchplayer.setDisabled(this.game.getLength() != this.size);
-		this.$.player.setActive(this.player == this.game.getPlayer());
-		this.$.computer.setActive(this.player != this.game.getPlayer());
-		this.$.renew.setShowing(this.game.endOfGame());
+		document.getElementById("switch-player-button").disabled = (this.game.getLength() != this.size);
+		this.showCurrentPlayer();
 		
 		// Test end condition
 		if (this.game.endOfGame()) {
-			this.$.endmessage.setContent(this.game.getPlayer() != this.player ? ":-)" : ":-(");
-			this.addClass(this.game.getPlayer() != this.player ? "end-message-win" : "end-message-lost");
-			this.removeClass(this.game.getPlayer() != this.player ? "end-message-lost" : "end-message-win");			
+			this.$.endmessage.addClass(this.game.getPlayer() != this.player ? "end-message-win" : "end-message-lost");
+			this.$.endmessage.removeClass(this.game.getPlayer() != this.player ? "end-message-lost" : "end-message-win");
+			this.$.endaudio.setSrc(this.game.getPlayer() != this.player ? "audio/applause.ogg" : "audio/disappointed.ogg");
+			this.$.endaudio.play();
+			this.$.endmessage.show();
 		}
 		this.$.endmessage.setShowing(this.game.endOfGame());		
 		
 		// Play for computer
-		if (this.game.getPlayer() != this.player)
+		if (this.game.getPlayer() != this.player && !this.game.endOfGame())
 			this.computerPlay();
 	},
 	
 	// Get current level
 	getLevel: function() {
-		if (this.$.easy.getActive())
+		if (document.getElementById("level-easy-button").classList.contains('active'))
 			return 1;
-		if (this.$.medium.getActive())
+		if (document.getElementById("level-medium-button").classList.contains('active'))
 			return 2;
-		if (this.$.hard.getActive())
+		if (document.getElementById("level-hard-button").classList.contains('active'))
 			return 3;	
 		return 0;
+	},
+	
+	// Show the current player turn
+	showCurrentPlayer: function() {
+		if (this.player == this.game.getPlayer() && !this.game.endOfGame())
+			this.$.player.removeClass("empty-image");
+		else
+			this.$.player.addClass("empty-image");
+		if (this.player != this.game.getPlayer() && !this.game.endOfGame())	
+			this.$.computer.removeClass("empty-image");
+		else
+			this.$.computer.addClass("empty-image");		
 	},
 	
 	// Select an item
@@ -94,10 +104,16 @@ enyo.kind({
 		if (this.player != this.game.getPlayer())
 			return;
 		var value = item.getSelected();
-		if (this.selectedCount == 3 && !value)
+		if (this.selectedCount == 3 && !value) {
+			this.$.playbutton.show();
 			return;
+		}
 		this.selectedCount = !value ? this.selectedCount + 1 : this.selectedCount - 1;
 		item.setSelected(!value);
+		if (this.selectedCount > 0)
+			this.$.playbutton.show();
+		else
+			this.$.playbutton.hide();
 	},
 	
 	// Switch player
@@ -115,6 +131,7 @@ enyo.kind({
 			return;	
 		this.game.play(this.selectedCount);
 		this.drawBoard();
+		this.$.playbutton.hide();
 	},
 	
 	// Let's computer play
