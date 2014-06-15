@@ -31,7 +31,7 @@ enyo.kind({
 		this.selectedCount = 0;
 		
 		// Init color
-		this.activity.getXOColor(function(error, colors) {});
+		this.activity.getXOColor(function(error, colors) {console.log(colors);});
 		
 		// Init level
 		document.getElementById("level-easy-button").classList.remove('active');
@@ -185,6 +185,8 @@ enyo.kind({
 		var currentthis = this;
 		datastoreObject.loadAsText(function (error, metadata, data) {
 			var data = JSON.parse(data);
+			if (data == null)
+				return;
 			currentthis.size = data.size;
 			currentthis.count = data.count;
 			currentthis.level = data.level;
